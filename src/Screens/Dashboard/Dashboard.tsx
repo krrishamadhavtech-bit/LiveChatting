@@ -16,6 +16,7 @@ import { styles } from './Dashboard.style';
 import ViewModal from './Dashboard.ViewModal';
 import { COLORS } from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
+import CustomModal from '../../components/CustomModal';
 
 const DashboardScreen = () => {
   const {
@@ -25,7 +26,10 @@ const DashboardScreen = () => {
     renderUserItem,
     handleLogout,
     loading,
-    currentUser
+    currentUser,
+    logoutModalVisible,
+    setLogoutModalVisible,
+    confirmLogout
   } = ViewModal();
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -111,6 +115,15 @@ const DashboardScreen = () => {
           </View>
         }
         ItemSeparatorComponent={() => <View style={styles.separator} />}
+      />
+
+      <CustomModal
+        visible={logoutModalVisible}
+        title="Logout"
+        message="Are you sure you want to logout?"
+        onConfirm={confirmLogout}
+        onCancel={() => setLogoutModalVisible(false)}
+        confirmText="Logout"
       />
     </SafeAreaView>
   );

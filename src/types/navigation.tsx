@@ -2,8 +2,6 @@ export type RootStackParamList = {
   DashboardScreen: undefined;
   ChattingScreen: {
     userId: string;
-    userName: string;
-    userAvatar :string
   };
   Login: undefined;
   Signup: undefined;

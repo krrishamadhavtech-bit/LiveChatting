@@ -184,4 +184,61 @@ export const styles = StyleSheet.create({
   sendButtonDisabled: {
     backgroundColor: COLORS.disabled,
   },
+  replyContainer: {
+    padding: wpx(8),
+    borderRadius: wpx(8),
+    marginBottom: hpx(5),
+  },
+  myReplyContainer: {
+    backgroundColor: COLORS.replyText,
+  },
+  otherReplyContainer: {
+    backgroundColor: COLORS.replyTextContainer,
+  },
+  replySender: {
+    fontSize: getFontSize(12),
+    fontFamily: fontFamily.bold,
+    marginBottom: hpx(2),
+    color: COLORS.primary,
+  },
+  myReplySender: {
+    color: COLORS.white,
+  },
+  otherReplySender: {
+    color: COLORS.primary,
+  },
+  replyText: {
+    fontSize: getFontSize(12),
+    fontFamily: fontFamily.regular,
+    color: COLORS.textSecondary,
+  },
+  myReplyText: {
+    color: COLORS.overlay,
+  },
+  otherReplyText: {
+    color: COLORS.textSecondary,
+  },
+  inputReplyContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.inputBackground,
+    padding: wpx(10),
+    borderTopLeftRadius: wpx(15),
+    borderTopRightRadius: wpx(15),
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  replyPreviewContent: {
+    flex: 1,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primary,
+    paddingLeft: wpx(10),
+  },
+  closeReplyButton: {
+    padding: wpx(5),
+  },
+  highlightedMessage: {
+    backgroundColor: COLORS.highlightBackground,
+    borderRadius: 10,
+  },
 });

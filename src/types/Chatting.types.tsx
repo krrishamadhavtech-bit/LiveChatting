@@ -24,10 +24,15 @@ export type Message = {
   timestamp: any;
   isMe: boolean;
   read: boolean;
+  replyTo?: {
+    id: string;
+    text: string;
+    senderName: string;
+    senderId: string;
+  };
+  forwarded?: boolean;
 };
 
 export type RouteParams = {
   userId?: string;
-  userName?: string;
-  userAvatar?: string;
 };

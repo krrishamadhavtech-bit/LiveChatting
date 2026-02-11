@@ -15,6 +15,10 @@ import { styles } from './Chatting.style';
 import ViewModal from './Chatting.ViewModal';
 import { COLORS } from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+import CustomModal from '../../components/CustomModal';
+import UserSelectionModal from '../../components/UserSelectionModal';
+import MessageOptionsModal from '../../components/MessageOptionsModal';
 
 const ChatScreen = () => {
     const {
@@ -24,13 +28,33 @@ const ChatScreen = () => {
         loading,
         typing,
         handleSend,
-        updateTypingStatus, // ✅ Added
+        updateTypingStatus,
         renderMessage,
         userName,
         userAvatar,
         isOnline,
         handleGoBack,
         flatListRef,
+        replyingTo,
+        setReplyingTo,
+        deleteModalVisible,
+        setDeleteModalVisible,
+        confirmDeleteMessage,
+        currentUserId,
+        userId,
+        highlightedMessageId,
+        setHighlightedMessageId,
+        scrollToMessage,
+        forwardModalVisible,
+        setForwardModalVisible,
+        forwardUsers,
+        handleForwardMessage,
+        optionsModalVisible,
+        setOptionsModalVisible,
+        selectedMessage,
+        handleReplyOption,
+        handleForwardOption,
+        handleDeleteOption
     } = ViewModal();
 
     const isTypingRef = useRef(false);
@@ -39,23 +63,46 @@ const ChatScreen = () => {
     const handleTextChange = (text: string) => {
         setNewMessage(text);
 
-        // Update typing status only if not already typing
         if (!isTypingRef.current) {
             isTypingRef.current = true;
             updateTypingStatus(true);
         }
 
-        // Clear existing timeout
         if (typingTimeoutRef.current) {
             clearTimeout(typingTimeoutRef.current);
         }
 
-        // Set timeout to clear typing status after 2 seconds of inactivity
         typingTimeoutRef.current = setTimeout(() => {
             isTypingRef.current = false;
             updateTypingStatus(false);
         }, 2000);
     };
+
+    const renderSwipeableMessage = ({ item }: { item: any }) => {
+        let swipeableRef: any = null;
+
+        const renderLeftActions = () => {
+            return (
+                <View style={{ width: 60, justifyContent: 'center', alignItems: 'center' }}>
+                    <Icon name="arrow-undo" size={24} color={COLORS.primary} style={{ transform: [{ scaleX: -1 }] }} />
+                </View>
+            );
+        };
+
+        return (
+            <Swipeable
+                ref={(ref) => { swipeableRef = ref; }}
+                renderLeftActions={renderLeftActions}
+                onSwipeableWillOpen={() => {
+                    setReplyingTo(item);
+                    swipeableRef?.close();
+                }}
+            >
+                {renderMessage({ item })}
+            </Swipeable>
+        );
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             {/* Header */}
@@ -83,33 +130,61 @@ const ChatScreen = () => {
             </View>
 
             {/* Messages List */}
-            <FlatList
-                ref={flatListRef}
-                data={messages}
-                renderItem={renderMessage}
-                keyExtractor={item => item.id}
-                style={styles.messagesList}
-                contentContainerStyle={[styles.messagesContent, { flexGrow: 1 }]}
-                showsVerticalScrollIndicator={false}
-                onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
-                onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
-                ListFooterComponent={
-                    typing ? (
-                        <View style={styles.typingIndicator}>
-                            <Text style={styles.typingText}>typing...</Text>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                <FlatList
+                    ref={flatListRef}
+                    data={messages}
+                    renderItem={renderSwipeableMessage}
+                    keyExtractor={item => item.id}
+                    style={styles.messagesList}
+                    contentContainerStyle={[styles.messagesContent, { flexGrow: 1 }]}
+                    showsVerticalScrollIndicator={false}
+                    onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+                    onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+                    onScrollToIndexFailed={info => {
+                        const wait = new Promise(resolve => setTimeout(resolve as any, 500));
+                        wait.then(() => {
+                            flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+                        });
+                    }}
+                    ListFooterComponent={
+                        typing ? (
+                            <View style={styles.typingIndicator}>
+                                <Text style={styles.typingText}>typing...</Text>
+                            </View>
+                        ) : null
+                    }
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <Icon name="chatbubbles-outline" size={80} color={COLORS.disabled} />
+                            <Text style={styles.emptyText}>No messages yet</Text>
+                            <Text style={styles.emptySubtext}>Start a conversation!</Text>
                         </View>
-                    ) : null
-                }
-                ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Icon name="chatbubbles-outline" size={80} color={COLORS.disabled} />
-                        <Text style={styles.emptyText}>No messages yet</Text>
-                        <Text style={styles.emptySubtext}>Start a conversation!</Text>
-                    </View>
-                }
-            />
+                    }
+                />
+            </GestureHandlerRootView>
 
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+                {replyingTo && (
+                    <View style={styles.inputReplyContainer}>
+                        <View style={styles.replyPreviewContent}>
+                            <Text style={styles.replySender} numberOfLines={1}>
+                                {replyingTo.senderId === currentUserId
+                                    ? 'You'
+                                    : (replyingTo.senderId === userId ? userName : (replyingTo.senderName || 'User'))}
+                            </Text>
+                            <Text style={styles.replyText} numberOfLines={1}>
+                                {replyingTo.text}
+                            </Text>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.closeReplyButton}
+                            onPress={() => setReplyingTo(null)}
+                        >
+                            <Icon name="close-circle" size={20} color={COLORS.textTertiary} />
+                        </TouchableOpacity>
+                    </View>
+                )}
                 <View style={styles.inputContainer}>
                     <View style={styles.inputWrapper}>
                         <TextInput
@@ -132,6 +207,31 @@ const ChatScreen = () => {
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
+
+            <CustomModal
+                visible={deleteModalVisible}
+                title="Delete Message"
+                message="Are you sure you want to delete this message? This action cannot be undone."
+                onConfirm={confirmDeleteMessage}
+                onCancel={() => setDeleteModalVisible(false)}
+                confirmText="Delete"
+            />
+
+            <UserSelectionModal
+                visible={forwardModalVisible}
+                users={forwardUsers}
+                onClose={() => setForwardModalVisible(false)}
+                onSelectUser={handleForwardMessage}
+            />
+
+            <MessageOptionsModal
+                visible={optionsModalVisible}
+                onClose={() => setOptionsModalVisible(false)}
+                onReply={handleReplyOption}
+                onForward={handleForwardOption}
+                onDelete={handleDeleteOption}
+                isMe={selectedMessage?.isMe || false}
+            />
         </SafeAreaView>
     );
 };

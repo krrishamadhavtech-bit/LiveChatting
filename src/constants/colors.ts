@@ -19,4 +19,8 @@ export const COLORS = {
     disabled: '#ccc',
     shadow: '#000',
     overlay: 'rgba(255, 255, 255, 0.8)',
+    replyText: 'rgba(255, 255, 255, 0.2)',
+    replyTextContainer: '#0000000d',
+    transparentBlack: '#00000080',
+    highlightBackground: 'rgba(0, 174, 255, 0.25)',
 };

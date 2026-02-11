@@ -11,6 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DashboardNavigationProp, FirestoreUser } from '../../types/Dashboard.types';
 import { COLORS } from '../../constants/colors';
 import { fontFamily } from '../../utils/responsive';
+import CustomModal from '../../components/CustomModal';
 
 // Update User type to include unread messages
 
@@ -23,6 +24,7 @@ const ViewModal = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentUser, setCurrentUser] = useState<FirestoreUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const chatListenersRef = React.useRef<Record<string, () => void>>({});
   const authUser = auth().currentUser;
 
@@ -255,36 +257,29 @@ const ViewModal = () => {
 
     navigation.navigate('ChattingScreen', {
       userId: user.id,
-      userName: user.name,
-      userAvatar: user.avatar || 'https://randomuser.me/api/portraits/men/1.jpg'
     });
   };
 
   const handleNewChat = () => Alert.alert('New Chat', 'Coming soon!');
 
-  const handleLogout = async () => {
-    Alert.alert('Logout', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            if (authUser) {
-              await firestore().collection('users').doc(authUser.uid).update({
-                isOnline: false,
-                lastSeen: firestore.FieldValue.serverTimestamp()
-              });
-            }
-            await AsyncStorage.removeItem('persistedUser');
-            await auth().signOut();
-            dispatch(reduxLogout());
-          } catch (e: any) {
-            Alert.alert('Error', e.message);
-          }
-        }
+  const handleLogout = () => setLogoutModalVisible(true);
+
+  const confirmLogout = async () => {
+    try {
+      if (authUser) {
+        await firestore().collection('users').doc(authUser.uid).update({
+          isOnline: false,
+          lastSeen: firestore.FieldValue.serverTimestamp()
+        });
       }
-    ]);
+      await AsyncStorage.removeItem('persistedUser');
+      await auth().signOut();
+      dispatch(reduxLogout());
+    } catch (e: any) {
+      Alert.alert('Error', e.message);
+    } finally {
+      setLogoutModalVisible(false);
+    }
   };
 
   // Helper
@@ -334,7 +329,7 @@ const ViewModal = () => {
 
         <View style={styles.messageRow}>
           <Text style={[styles.lastMessage, item.unreadCount > 0 && styles.unreadLastMessage, item.isTyping && { color: COLORS.online, fontFamily: fontFamily.bold }]} numberOfLines={1}>
-            {item.isTyping ? 'typing...' : (item.lastMessage || item.email || 'Start a conversation')}
+            {item.isTyping ? 'typing...' : (item.lastMessage || 'Start a conversation')}
           </Text>
         </View>
       </View>
@@ -353,7 +348,10 @@ const ViewModal = () => {
     loading,
     setLoading: () => { },
     setUsers: () => { },
-    currentUser
+    currentUser,
+    logoutModalVisible,
+    setLogoutModalVisible,
+    confirmLogout
   };
 };
 
