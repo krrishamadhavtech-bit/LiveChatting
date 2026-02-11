@@ -10,7 +10,6 @@ import {
     KeyboardAvoidingView,
     Platform,
     SafeAreaView,
-    ActivityIndicator,
 } from 'react-native';
 import { styles } from './Chatting.style';
 import ViewModal from './Chatting.ViewModal';
@@ -90,11 +89,19 @@ const ChatScreen = () => {
                 renderItem={renderMessage}
                 keyExtractor={item => item.id}
                 style={styles.messagesList}
-                contentContainerStyle={styles.messagesContent}
+                contentContainerStyle={[styles.messagesContent, { flexGrow: 1 }]}
                 showsVerticalScrollIndicator={false}
-                inverted
+                onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+                onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+                ListFooterComponent={
+                    typing ? (
+                        <View style={styles.typingIndicator}>
+                            <Text style={styles.typingText}>typing...</Text>
+                        </View>
+                    ) : null
+                }
                 ListEmptyComponent={
-                    <View style={[styles.emptyContainer, { transform: [{ scaleY: -1 }] }]}>
+                    <View style={styles.emptyContainer}>
                         <Icon name="chatbubbles-outline" size={80} color={COLORS.disabled} />
                         <Text style={styles.emptyText}>No messages yet</Text>
                         <Text style={styles.emptySubtext}>Start a conversation!</Text>
@@ -102,10 +109,7 @@ const ChatScreen = () => {
                 }
             />
 
-            {/* Input Area */}
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            >
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
                 <View style={styles.inputContainer}>
                     <View style={styles.inputWrapper}>
                         <TextInput
@@ -131,7 +135,5 @@ const ChatScreen = () => {
         </SafeAreaView>
     );
 };
-
-
 
 export default ChatScreen;

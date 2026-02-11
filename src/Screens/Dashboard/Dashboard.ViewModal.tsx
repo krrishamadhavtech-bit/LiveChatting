@@ -10,6 +10,7 @@ import { logout as reduxLogout } from '../../store/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DashboardNavigationProp, FirestoreUser } from '../../types/Dashboard.types';
 import { COLORS } from '../../constants/colors';
+import { fontFamily } from '../../utils/responsive';
 
 // Update User type to include unread messages
 
@@ -80,6 +81,7 @@ const ViewModal = () => {
             const data = doc.data();
             const lastMsg = data?.lastMessage || {};
             const unread = (lastMsg.senderId === user.id && !lastMsg.read) ? 1 : 0;
+            const otherUserTyping = data?.typingStatus?.[user.id] || false;
 
             setChatMetaData(prev => ({
               ...prev,
@@ -87,6 +89,7 @@ const ViewModal = () => {
                 lastMessage: lastMsg.text || '',
                 lastMessageTime: lastMsg.timestamp?.toDate() || null,
                 unreadCount: unread,
+                isTyping: otherUserTyping,
               }
             }));
           } else {
@@ -97,6 +100,7 @@ const ViewModal = () => {
                 lastMessage: 'Start a conversation',
                 lastMessageTime: null,
                 unreadCount: 0,
+                isTyping: false,
               }
             }));
           }
@@ -119,37 +123,99 @@ const ViewModal = () => {
     };
   }, []);
 
-  // 3. Merge Raw Users + Chat Data -> Filtered Users
+  // Filter & Search
   useEffect(() => {
-    let merged = rawUsers.map(user => {
-      const meta = chatMetaData[user.id] || {};
-      return {
-        ...user,
-        lastMessage: meta.lastMessage || user.lastMessage,
-        lastMessageTime: meta.lastMessageTime || user.lastMessageTime,
-        unreadCount: meta.unreadCount || 0,
-      };
-    });
+    const filterLocal = () => {
+      let merged = rawUsers.map(user => {
+        const meta = chatMetaData[user.id] || {};
+        return {
+          ...user,
+          lastMessage: meta.lastMessage || user.lastMessage,
+          lastMessageTime: meta.lastMessageTime || user.lastMessageTime,
+          unreadCount: meta.unreadCount || 0,
+          isTyping: meta.isTyping || false,
+        };
+      });
 
-    // Sort
-    merged.sort((a, b) => {
-      if (a.unreadCount !== b.unreadCount) return b.unreadCount - a.unreadCount;
-      if (a.isOnline !== b.isOnline) return a.isOnline ? -1 : 1;
-      const timeA = a.lastMessageTime ? a.lastMessageTime.getTime() : 0;
-      const timeB = b.lastMessageTime ? b.lastMessageTime.getTime() : 0;
-      return timeB - timeA;
-    });
+      // Sort by latest message time
+      merged.sort((a, b) => {
+        const timeA = a.lastMessageTime ? a.lastMessageTime.getTime() : 0;
+        const timeB = b.lastMessageTime ? b.lastMessageTime.getTime() : 0;
+        return timeB - timeA;
+      });
 
-    // Filter
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      merged = merged.filter(u =>
-        u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
-      );
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        merged = merged.filter(u =>
+          u.name.toLowerCase().includes(q) ||
+          u.email.toLowerCase().includes(q) ||
+          (u.lastMessage && u.lastMessage.toLowerCase().includes(q))
+        );
+      }
+      setFilteredUsers(merged);
+    };
+
+    if (!searchQuery.trim()) {
+      filterLocal();
+      return;
     }
 
-    setFilteredUsers(merged);
-  }, [rawUsers, chatMetaData, searchQuery]);
+    const deepSearch = async () => {
+      const currentUserId = authUser?.uid;
+      if (!currentUserId) return;
+
+      const matches = new Map<string, string>(); // userId -> matchingMessageText
+
+      // 2. Deep search in messages subcollections
+      const searchPromises = rawUsers.map(async (user) => {
+        if (matches.has(user.id)) return;
+
+        const chatRoomId = [currentUserId, user.id].sort().join('_');
+        const msgQuery = await firestore()
+          .collection('chatRooms')
+          .doc(chatRoomId)
+          .collection('messages')
+          .where('text', '>=', searchQuery)
+          .where('text', '<=', searchQuery + '\uf8ff')
+          .limit(1)
+          .get();
+
+        if (!msgQuery.empty) {
+          const matchedDoc = msgQuery.docs[0].data();
+          matches.set(user.id, matchedDoc.text);
+        }
+      });
+
+      await Promise.all(searchPromises);
+
+      const results = rawUsers
+        .filter(u => matches.has(u.id))
+        .map(user => {
+          const meta = chatMetaData[user.id] || {};
+          const matchedMsg = matches.get(user.id);
+          return {
+            ...user,
+            lastMessage: matchedMsg || meta.lastMessage || user.lastMessage,
+            lastMessageTime: meta.lastMessageTime || user.lastMessageTime,
+            unreadCount: meta.unreadCount || 0,
+            isTyping: meta.isTyping || false,
+          };
+        })
+        .sort((a, b) => {
+          const timeA = a.lastMessageTime ? a.lastMessageTime.getTime() : 0;
+          const timeB = b.lastMessageTime ? b.lastMessageTime.getTime() : 0;
+          return timeB - timeA;
+        });
+
+      setFilteredUsers(results);
+    };
+
+    const delayDebounceFn = setTimeout(() => {
+      deepSearch();
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [rawUsers, chatMetaData, searchQuery, authUser]);
 
 
   // 4. Fetch Current User
@@ -223,12 +289,16 @@ const ViewModal = () => {
 
   // Helper
   const formatTime = (date: Date) => {
-    // ... same format logic ...
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    if (diffMs < 60000) return 'just now';
-    if (diffMs < 3600000) return `${Math.floor(diffMs / 60000)}m ago`;
-    if (diffMs < 86400000) return `${Math.floor(diffMs / 3600000)}h ago`;
+    const isToday = date.toDateString() === now.toDateString();
+
+    if (isToday) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    const isYesterday = new Date(now.setDate(now.getDate() - 1)).toDateString() === date.toDateString();
+    if (isYesterday) return 'Yesterday';
+
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
@@ -263,8 +333,8 @@ const ViewModal = () => {
         </View>
 
         <View style={styles.messageRow}>
-          <Text style={[styles.lastMessage, item.unreadCount > 0 && styles.unreadLastMessage]} numberOfLines={1}>
-            {item.lastMessage || item.email || 'Start a conversation'}
+          <Text style={[styles.lastMessage, item.unreadCount > 0 && styles.unreadLastMessage, item.isTyping && { color: COLORS.online, fontFamily: fontFamily.bold }]} numberOfLines={1}>
+            {item.isTyping ? 'typing...' : (item.lastMessage || item.email || 'Start a conversation')}
           </Text>
         </View>
       </View>

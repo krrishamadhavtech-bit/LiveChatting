@@ -57,6 +57,25 @@ export const styles = StyleSheet.create({
   messageContainer: {
     marginBottom: hpx(15),
   },
+  typingIndicator: {
+    padding: wpx(8),
+    paddingHorizontal: wpx(12),
+    borderRadius: wpx(18),
+    borderBottomLeftRadius: wpx(4),
+    backgroundColor: COLORS.white,
+    alignSelf: 'flex-start',
+    marginBottom: hpx(10),
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  typingText: {
+    fontSize: getFontSize(14),
+    color: COLORS.textTertiary,
+    fontStyle: 'italic',
+  },
   myMessage: {
     alignItems: 'flex-end',
   },

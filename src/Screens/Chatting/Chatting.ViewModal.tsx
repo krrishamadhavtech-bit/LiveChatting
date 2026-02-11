@@ -42,14 +42,13 @@ const ViewModal = () => {
         if (!currentUserId || !userId) return;
         const chatRoomId = getChatRoomId();
         try {
-            await firestore()
-                .collection('chatRooms')
-                .doc(chatRoomId)
-                .set({
-                    typingStatus: {
-                        [currentUserId]: isTyping
-                    }
-                }, { merge: true });
+            const chatRoomRef = firestore().collection('chatRooms').doc(chatRoomId);
+            const doc = await chatRoomRef.get();
+            if (doc.exists()) {
+                await chatRoomRef.update({
+                    [`typingStatus.${currentUserId}`]: isTyping
+                });
+            }
         } catch (error) {
             console.error('Error updating typing status:', error);
         }
@@ -66,7 +65,7 @@ const ViewModal = () => {
             .collection('chatRooms')
             .doc(chatRoomId)
             .collection('messages')
-            .orderBy('timestamp', 'desc')
+            .orderBy('timestamp', 'asc')
             .onSnapshot(
                 (snapshot) => {
                     const messagesList: Message[] = [];
@@ -150,9 +149,19 @@ const ViewModal = () => {
             unsubscribeTyping();
             unsubscribeOnline();
             appStateSub.remove();
-            updateTypingStatus(false); // Stop typing on unmount
+            updateTypingStatus(false);
         };
     }, [currentUserId, userId]);
+
+    // 5. Scroll to bottom when new messages arrive (animated)
+    useEffect(() => {
+        if (flatListRef.current && messages.length > 0) {
+            const timer = setTimeout(() => {
+                flatListRef.current.scrollToEnd({ animated: true });
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [messages.length, typing]);
 
 
     const markMessagesAsRead = async (specificIds?: string[]) => {

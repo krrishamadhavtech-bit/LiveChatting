@@ -10,6 +10,7 @@ import {
   StatusBar,
   ActivityIndicator,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import { styles } from './Dashboard.style';
 import ViewModal from './Dashboard.ViewModal';
@@ -18,7 +19,6 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 const DashboardScreen = () => {
   const {
-    navigation,
     searchQuery,
     setSearchQuery,
     filteredUsers,
@@ -71,7 +71,7 @@ const DashboardScreen = () => {
           onChangeText={setSearchQuery}
           clearButtonMode="while-editing"
         />
-        {searchQuery.length > 0 && (
+        {searchQuery.length > 0 && Platform.OS !== 'ios' && (
           <TouchableOpacity onPress={() => setSearchQuery('')}>
             <Icon name="close-circle" size={20} color={COLORS.textTertiary} style={styles.clearText} />
           </TouchableOpacity>
