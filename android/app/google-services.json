@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "849596733903",
+    "firebase_url": "https://livechatting-b0f8b-default-rtdb.firebaseio.com",
+    "project_id": "livechatting-b0f8b",
+    "storage_bucket": "livechatting-b0f8b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:849596733903:android:e69373adbc931778b9daba",
+        "android_client_info": {
+          "package_name": "com.livechat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPgzn7esOZMKrfIvKrKr-sdvWpmfXsKv4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
