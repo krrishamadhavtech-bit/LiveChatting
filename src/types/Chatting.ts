@@ -1,21 +1,3 @@
-
-
-export interface GroupedMessages {
-  [key: string]: Message[];
-}
-
-export interface ChattingViewModelState {
-  messages: Message[];
-  messageText: string;
-  sending: boolean;
-}
-
-export interface ChattingUser {
-  username: string;
-  userId: string;
-}
-
-
 export type Message = {
   id: string;
   text: string;

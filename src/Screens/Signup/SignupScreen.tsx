@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import ViewModel from './Signup.ViewModal';
-import { styles } from './Signup.style';
+import { styles } from './style';
 import { COLORS } from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
 

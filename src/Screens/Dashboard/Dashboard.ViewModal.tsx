@@ -4,16 +4,13 @@ import React, { useState, useEffect } from 'react'
 import { useNavigation } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
-import { styles } from './Dashboard.style';
+import { styles } from './style';
 import { useDispatch } from 'react-redux';
 import { logout as reduxLogout } from '../../store/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DashboardNavigationProp, FirestoreUser } from '../../types/Dashboard.types';
+import { DashboardNavigationProp, FirestoreUser } from '../../types/Dashboard';
 import { COLORS } from '../../constants/colors';
 import { fontFamily } from '../../utils/responsive';
-import CustomModal from '../../components/CustomModal';
-
-// Update User type to include unread messages
 
 const ViewModal = () => {
   const navigation = useNavigation<DashboardNavigationProp>();
@@ -239,8 +236,6 @@ const ViewModal = () => {
 
     // Mark in Firestore
     if (authUser) {
-      console.log('Marking messages as read for user:', user.id);
-      console.log('authUser.id:', authUser.uid);
       const chatRoomId = [authUser.uid, user.id].sort().join('_');
       const batch = firestore().batch();
       const unreadDocs = await firestore().collection('chatRooms')

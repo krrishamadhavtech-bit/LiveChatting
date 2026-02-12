@@ -12,7 +12,7 @@ import {
   RefreshControl,
   Platform,
 } from 'react-native';
-import { styles } from './Dashboard.style';
+import { styles } from './style';
 import ViewModal from './Dashboard.ViewModal';
 import { COLORS } from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';

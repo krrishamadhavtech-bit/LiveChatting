@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
         color: COLORS.text,
     },
     closeButton: {
-        padding: 5,
+        padding: wpx(5),
     },
     listContent: {
         padding: wpx(15),

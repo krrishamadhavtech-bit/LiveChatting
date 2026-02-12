@@ -17,11 +17,11 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
-import { styles } from './Chatting.style';
+import { styles } from './style';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Message, RouteParams } from '../../types/Chatting.types';
+import { Message, RouteParams } from '../../types/Chatting';
 import { COLORS } from '../../constants/colors';
 
 const ViewModal = () => {

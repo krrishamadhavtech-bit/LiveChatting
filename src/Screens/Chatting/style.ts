@@ -260,5 +260,9 @@ export const styles = StyleSheet.create({
     color: COLORS.textTertiary,
     marginBottom: hpx(4),
   },
-
+  renderSwiper: {
+    width: wpx(60),
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
 });

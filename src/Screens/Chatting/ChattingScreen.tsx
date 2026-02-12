@@ -11,7 +11,7 @@ import {
     Platform,
     SafeAreaView,
 } from 'react-native';
-import { styles } from './Chatting.style';
+import { styles } from './style';
 import ViewModal from './Chatting.ViewModal';
 import { COLORS } from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -79,7 +79,7 @@ const ChatScreen = () => {
 
         const renderLeftActions = () => {
             return (
-                <View style={{ width: 60, justifyContent: 'center', alignItems: 'center' }}>
+                <View style={styles.renderSwiper}>
                     <Icon name="arrow-undo" size={24} color={COLORS.primary} style={{ transform: [{ scaleX: -1 }] }} />
                 </View>
             );
@@ -126,7 +126,7 @@ const ChatScreen = () => {
             </View>
 
             {/* Messages List */}
-            <GestureHandlerRootView style={{ flex: 1 }}>
+            <GestureHandlerRootView style={styles.headerText}>
                 <FlatList
                     ref={flatListRef}
                     data={messages}

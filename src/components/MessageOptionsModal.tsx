@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
         paddingBottom: Platform.OS === 'ios' ? hpx(35) : hpx(25),
     },
     optionsWrapper: {
-        backgroundColor: COLORS.card, // Using card color (white)
+        backgroundColor: COLORS.card,
         borderRadius: 14,
         marginBottom: hpx(10),
         overflow: 'hidden',
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: hpx(16),
         paddingHorizontal: wpx(20),
-        justifyContent: 'flex-start', // specific for iOS-like menus
+        justifyContent: 'flex-start',
     },
     optionText: {
         fontSize: getFontSize(16),
@@ -96,14 +96,14 @@ const styles = StyleSheet.create({
     separator: {
         height: 1,
         backgroundColor: COLORS.border,
-        marginLeft: wpx(55), // Indent separator to match text start
+        marginLeft: wpx(55),
     },
     cancelButton: {
         backgroundColor: COLORS.white,
         borderRadius: 14,
         paddingVertical: hpx(16),
         alignItems: 'center',
-        shadowColor: "#000",
+        shadowColor: COLORS.black,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 2,

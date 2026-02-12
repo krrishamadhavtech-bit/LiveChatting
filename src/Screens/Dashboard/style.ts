@@ -66,7 +66,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     fontSize: getFontSize(16),
     color: COLORS.black,
-    padding: 0,
   },
   clearText: {
     fontSize: getFontSize(18),
@@ -149,20 +148,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginRight: wpx(10),
   },
-  unreadBadge: {
-    backgroundColor: COLORS.primary,
-    borderRadius: wpx(12),
-    minWidth: wpx(24),
-    height: wpx(24),
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: wpx(6),
-  },
-  unreadCount: {
-    color: COLORS.white,
-    fontSize: getFontSize(12),
-    fontFamily: fontFamily.bold,
-  },
   separator: {
     height: 1,
     backgroundColor: COLORS.inputBackground,
@@ -174,10 +159,6 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: hpx(100),
   },
-  emptyIcon: {
-    fontSize: getFontSize(60),
-    color: COLORS.disabled,
-  },
   emptyText: {
     fontSize: getFontSize(18),
     color: COLORS.textSecondary,
@@ -188,28 +169,6 @@ export const styles = StyleSheet.create({
     fontSize: getFontSize(14),
     color: COLORS.textTertiary,
   },
-  fab: {
-    position: 'absolute',
-    right: wpx(20),
-    bottom: hpx(20),
-    width: wpx(60),
-    height: wpx(60),
-    borderRadius: wpx(30),
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 8,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-  },
-  fabIcon: {
-    fontSize: getFontSize(30),
-    color: COLORS.white,
-    fontFamily: fontFamily.bold,
-  },
-  // Unread Message Dot (Red Dot)
   unreadDot: {
     position: 'absolute',
     top: hpx(-2),
@@ -228,7 +187,6 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 2,
   },
-
   unreadDotText: {
     color: COLORS.white,
     fontSize: getFontSize(10),

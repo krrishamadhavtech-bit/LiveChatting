@@ -55,7 +55,7 @@ const ViewModel = () => {
       ]);
     } catch (error: any) {
       let errorMessage = 'An error occurred during signup';
-      
+
       switch (error.code) {
         case 'auth/email-already-in-use':
           errorMessage = 'This email is already registered';
@@ -72,9 +72,8 @@ const ViewModel = () => {
         default:
           errorMessage = error.message;
       }
-      
+
       Alert.alert('Signup Error', errorMessage);
-      console.log('Signup Error:', error);
     } finally {
       setLoading(false);
     }
