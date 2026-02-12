@@ -25,7 +25,6 @@ const ChatScreen = () => {
         messages,
         newMessage,
         setNewMessage,
-        loading,
         typing,
         handleSend,
         updateTypingStatus,
@@ -42,9 +41,6 @@ const ChatScreen = () => {
         confirmDeleteMessage,
         currentUserId,
         userId,
-        highlightedMessageId,
-        setHighlightedMessageId,
-        scrollToMessage,
         forwardModalVisible,
         setForwardModalVisible,
         forwardUsers,
@@ -139,15 +135,14 @@ const ChatScreen = () => {
                     style={styles.messagesList}
                     contentContainerStyle={[styles.messagesContent, { flexGrow: 1 }]}
                     showsVerticalScrollIndicator={false}
-                    onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
-                    onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+                    inverted
                     onScrollToIndexFailed={info => {
                         const wait = new Promise(resolve => setTimeout(resolve as any, 500));
                         wait.then(() => {
                             flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
                         });
                     }}
-                    ListFooterComponent={
+                    ListHeaderComponent={
                         typing ? (
                             <View style={styles.typingIndicator}>
                                 <Text style={styles.typingText}>typing...</Text>

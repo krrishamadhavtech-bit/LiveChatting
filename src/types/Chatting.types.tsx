@@ -31,6 +31,7 @@ export type Message = {
     senderId: string;
   };
   forwarded?: boolean;
+  forwardedFrom?: string | null;
 };
 
 export type RouteParams = {

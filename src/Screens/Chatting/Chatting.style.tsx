@@ -241,4 +241,24 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.highlightBackground,
     borderRadius: 10,
   },
+  forwardedText: {
+    fontSize: getFontSize(10),
+    fontStyle: 'italic',
+    marginBottom: hpx(2),
+  },
+
+  myForwardedText: {
+    color: COLORS.overlay,
+  },
+
+  otherForwardedText: {
+    color: COLORS.textTertiary,
+  },
+
+  forwardedFromText: {
+    fontSize: getFontSize(10),
+    color: COLORS.textTertiary,
+    marginBottom: hpx(4),
+  },
+
 });

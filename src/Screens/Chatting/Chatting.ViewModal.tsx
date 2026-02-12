@@ -137,7 +137,7 @@ const ViewModal = () => {
             .collection('chatRooms')
             .doc(chatRoomId)
             .collection('messages')
-            .orderBy('timestamp', 'asc')
+            .orderBy('timestamp', 'desc')
             .onSnapshot(
                 (snapshot) => {
                     const messagesList: Message[] = [];
@@ -160,6 +160,8 @@ const ViewModal = () => {
                             isMe: isMe,
                             read: data.read || false,
                             replyTo: data.replyTo || null,
+                            forwarded: data.forwarded || false,
+                            forwardedFrom: data.forwardedFrom || null,
                         });
                     });
 
@@ -226,15 +228,6 @@ const ViewModal = () => {
         };
     }, [currentUserId, userId]);
 
-    // 5. Scroll to bottom when new messages arrive (animated)
-    useEffect(() => {
-        if (flatListRef.current && messages.length > 0) {
-            const timer = setTimeout(() => {
-                flatListRef.current.scrollToEnd({ animated: true });
-            }, 100);
-            return () => clearTimeout(timer);
-        }
-    }, [messages.length, typing]);
 
 
     const markMessagesAsRead = async (specificIds?: string[]) => {
@@ -292,7 +285,6 @@ const ViewModal = () => {
     // Mark messages as read when screen is focused
     useFocusEffect(
         React.useCallback(() => {
-            console.log('Chat screen focused - marking messages as read');
             markMessagesAsRead();
             return () => { };
         }, [userId])
@@ -405,6 +397,7 @@ const ViewModal = () => {
                 timestamp,
                 read: false,
                 forwarded: true, // Optional flag
+                forwardedFrom: forwardMessage.senderName,
                 replyTo: null,
             };
 
@@ -489,6 +482,15 @@ const ViewModal = () => {
                     item.id === highlightedMessageId && styles.highlightedMessage
                 ]}
             >
+                {item.forwarded && (
+                    <Text style={[
+                        styles.forwardedText,
+                        item.isMe ? styles.myForwardedText : styles.otherForwardedText
+                    ]}>
+                        Forwarded
+                    </Text>
+                )}
+
                 {item.replyTo && (
                     <TouchableOpacity
                         activeOpacity={0.8}
