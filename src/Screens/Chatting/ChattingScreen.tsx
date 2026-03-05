@@ -82,7 +82,7 @@ const ChatScreen = () => {
         const renderLeftActions = () => {
             return (
                 <View style={styles.renderSwiper}>
-                    <Icon name="arrow-undo" size={24} color={COLORS.primary} style={{ transform: [{ scaleX: -1 }] }} />
+                    <Icon name="arrow-undo" size={24} color={COLORS.primary} style={styles.flipIcon} />
                 </View>
             );
         };
@@ -120,7 +120,7 @@ const ChatScreen = () => {
                     />
                     <View style={styles.headerText}>
                         <Text style={styles.headerName}>{userName}</Text>
-                        <Text style={[styles.headerStatus, { color: typing ? COLORS.primary : isOnline ? COLORS.secondary : COLORS.textTertiary }]}>
+                        <Text style={[styles.headerStatus, typing ? styles.typingStatus : isOnline ? styles.onlineStatus : styles.offlineStatus]}>
                             {typing ? 'typing...' : isOnline ? 'Online' : 'Offline'}
                         </Text>
                     </View>
@@ -139,7 +139,7 @@ const ChatScreen = () => {
                     renderItem={renderSwipeableMessage}
                     keyExtractor={item => item.id}
                     style={styles.messagesList}
-                    contentContainerStyle={[styles.messagesContent, { flexGrow: 1 }]}
+                    contentContainerStyle={styles.messagesContent}
                     showsVerticalScrollIndicator={false}
                     inverted
                     onScrollToIndexFailed={info => {

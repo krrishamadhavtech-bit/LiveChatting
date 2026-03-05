@@ -43,6 +43,9 @@ export const styles = StyleSheet.create({
   headerStatus: {
     fontSize: getFontSize(14),
   },
+  onlineStatus: { color: COLORS.secondary },
+  typingStatus: { color: COLORS.primary },
+  offlineStatus: { color: COLORS.textTertiary },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -55,6 +58,7 @@ export const styles = StyleSheet.create({
   },
   messagesContent: {
     padding: wpx(10),
+    flexGrow: 1,
   },
   messageContainer: {
     marginBottom: hpx(15),
@@ -267,9 +271,12 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
+  flipIcon: { transform: [{ scaleX: -1 }] },
   callMessageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 4,
-  }
+  },
+  callMessageText: { marginLeft: 8 },
+  statusCheckmark: { marginLeft: 4 },
 });

@@ -59,7 +59,7 @@ const DashboardScreen = () => {
         </Text>
         <TouchableOpacity style={styles.headerButton} onPress={handleLogout}>
           {/* <Icon name="log-out-outline" size={18} color={COLORS.white} /> */}
-          <Text style={[styles.headerButtonText, { marginLeft: 5 }]}>Logout</Text>
+          <Text style={styles.headerButtonText}>Logout</Text>
         </TouchableOpacity>
       </View>
 

@@ -574,7 +574,7 @@ const ViewModal = () => {
                 {item.type === 'call' ? (
                     <View style={styles.callMessageContainer}>
                         <Icon name="call" size={20} color={item.isMe ? COLORS.white : COLORS.black} />
-                        <Text style={[styles.messageText, item.isMe ? styles.myMessageText : styles.otherMessageText, { marginLeft: 8 }]}>
+                        <Text style={[styles.messageText, item.isMe ? styles.myMessageText : styles.otherMessageText, styles.callMessageText]}>
                             {item.text.replace('📞 ', '')}
                         </Text>
                     </View>
@@ -592,7 +592,7 @@ const ViewModal = () => {
                             name={item.read ? "checkmark-done" : "checkmark"}
                             size={16}
                             color={!item.read ? COLORS.overlay : COLORS.online}
-                            style={{ marginLeft: 4 }}
+                            style={styles.statusCheckmark}
                         />
                     )}
                 </View>

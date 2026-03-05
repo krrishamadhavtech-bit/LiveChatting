@@ -10,6 +10,7 @@ export const COLORS = {
     borderDark: '#ddd',
     white: '#fff',
     black: '#000',
+    darkGrey: '#111',
     error: '#FF3B30',
     success: '#34C759',
     online: '#4CD964',
@@ -23,4 +24,9 @@ export const COLORS = {
     replyTextContainer: '#0000000d',
     transparentBlack: '#00000080',
     highlightBackground: 'rgba(0, 174, 255, 0.25)',
+    callBackground: '#0D0F1A',
+    callPrimary: '#6358FF',
+    callSecondary: '#00D2AA',
+    callHold: '#FFA500',
+    callAvatarBg: '#2a2d45',
 };

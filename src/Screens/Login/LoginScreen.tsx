@@ -39,7 +39,7 @@ const LoginScreen = () => {
         >
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.header}>
-                    <Icon name="chatbubble-ellipses" size={80} color={COLORS.primary} style={{ marginBottom: 20 }} />
+                    <Icon name="chatbubble-ellipses" size={80} color={COLORS.primary} style={styles.logoIcon} />
                     <Text style={styles.title}>Welcome Back</Text>
                     <Text style={styles.subtitle}>Login to continue</Text>
                 </View>
@@ -111,8 +111,8 @@ const LoginScreen = () => {
                     </View>
 
                     <TouchableOpacity style={styles.googleButton} disabled={loading}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Icon name="logo-google" size={20} color={COLORS.text} style={{ marginRight: 10 }} />
+                        <View style={styles.googleButtonContent}>
+                            <Icon name="logo-google" size={20} color={COLORS.text} style={styles.googleIcon} />
                             <Text style={styles.googleButtonText}>Continue with Google</Text>
                         </View>
                     </TouchableOpacity>

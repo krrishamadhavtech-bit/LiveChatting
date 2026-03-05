@@ -298,7 +298,7 @@ const ViewModal = () => {
       disabled={loading}
     >
       <View style={styles.avatarContainer}>
-        <View style={[styles.avatarPlaceholder, { backgroundColor: COLORS.primary }]}>
+        <View style={styles.avatarPlaceholder}>
           <Text style={styles.avatarText}>{item.name.charAt(0).toUpperCase()}</Text>
         </View>
         {item.isOnline && <View style={styles.onlineIndicator} />}
@@ -320,7 +320,7 @@ const ViewModal = () => {
         </View>
 
         <View style={styles.messageRow}>
-          <Text style={[styles.lastMessage, item.unreadCount > 0 && styles.unreadLastMessage, item.isTyping && { color: COLORS.online, fontFamily: fontFamily.bold }]} numberOfLines={1}>
+          <Text style={[styles.lastMessage, item.unreadCount > 0 && styles.unreadLastMessage, item.isTyping && styles.typingTextActive]} numberOfLines={1}>
             {item.isTyping ? 'typing...' : (item.lastMessage || 'Start a conversation')}
           </Text>
         </View>

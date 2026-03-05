@@ -16,9 +16,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: hpx(40),
     },
-    logo: {
-        width: wpx(100),
-        height: hpx(100),
+    logoIcon: {
         marginBottom: hpx(20),
     },
     title: {
@@ -135,5 +133,12 @@ export const styles = StyleSheet.create({
         color: COLORS.primary,
         fontSize: getFontSize(15),
         fontFamily: fontFamily.semi_bold,
+    },
+    googleButtonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    googleIcon: {
+        marginRight: wpx(10),
     },
 });

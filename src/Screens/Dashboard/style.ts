@@ -47,6 +47,7 @@ export const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: getFontSize(14),
     fontFamily: fontFamily.semi_bold,
+    marginLeft: wpx(5),
   },
   searchContainer: {
     flexDirection: 'row',
@@ -102,6 +103,7 @@ export const styles = StyleSheet.create({
     borderRadius: wpx(25),
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: COLORS.primary,
   },
   avatarText: {
     fontSize: getFontSize(16),
@@ -210,5 +212,9 @@ export const styles = StyleSheet.create({
     color: COLORS.primary,
     fontStyle: 'italic',
     marginLeft: wpx(5),
+  },
+  typingTextActive: {
+    color: COLORS.online,
+    fontFamily: fontFamily.bold,
   },
 });

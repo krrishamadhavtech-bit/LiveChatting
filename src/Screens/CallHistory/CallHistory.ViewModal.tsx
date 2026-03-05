@@ -64,7 +64,10 @@ const ViewModal = () => {
                 <Icon
                     name={item.isOutgoing ? "arrow-up-outline" : "arrow-down-outline"}
                     size={13}
-                    style={{ transform: [{ rotate: '135deg' }], color: !item.isAccepted ? COLORS.error : (item.isOutgoing ? COLORS.primary : COLORS.secondary) }}
+                    style={[
+                        styles.historyIcon,
+                        !item.isAccepted ? styles.statusError : (item.isOutgoing ? styles.statusPrimary : styles.statusSecondary)
+                    ]}
                 />
             </View>
 
