@@ -1,7 +1,7 @@
 // Dashboard.style.ts
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 import { COLORS } from '../../constants/colors';
-import { wpx, hpx, getFontSize, fontFamily } from '../../utils/responsive';
+import { wpx, hpx, getFontSize, fontFamily, hp } from '../../utils/responsive';
 
 export const styles = StyleSheet.create({
   container: {
@@ -28,6 +28,7 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.inputBackground,
+    marginTop: hpx(20)
   },
   headerTitle: {
     fontSize: getFontSize(24),
@@ -54,7 +55,7 @@ export const styles = StyleSheet.create({
     marginHorizontal: wpx(20),
     marginVertical: hpx(10),
     paddingHorizontal: wpx(15),
-    paddingVertical: hpx(10),
+    paddingVertical: Platform.OS == 'android' ? hpx(0) : hpx(10),
     borderRadius: wpx(25),
   },
   searchIcon: {
@@ -64,11 +65,11 @@ export const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: getFontSize(16),
+    fontSize: getFontSize(12),
     color: COLORS.black,
   },
   clearText: {
-    fontSize: getFontSize(18),
+    fontSize: getFontSize(14),
     color: COLORS.textTertiary,
     padding: wpx(5),
   },
@@ -81,6 +82,7 @@ export const styles = StyleSheet.create({
   statsText: {
     fontSize: getFontSize(14),
     color: COLORS.textSecondary,
+    fontFamily: fontFamily.regular,
     fontStyle: 'italic',
   },
   userItem: {

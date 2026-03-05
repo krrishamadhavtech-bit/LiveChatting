@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import ChatScreen from '../Screens/Chatting/ChattingScreen';
 import LoginScreen from '../Screens/Login/LoginScreen';
 import SignupScreen from '../Screens/Signup/SignupScreen';
-import DashboardScreen from '../Screens/Dashboard/Dashboard';
+import MainTabNavigator from './TabNavigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { COLORS } from '../constants/colors';
@@ -16,7 +16,7 @@ const StackNavigation = () => {
 
     return (
         <Stack.Navigator
-            initialRouteName={isLoggedIn ? 'DashboardScreen' : 'Login'}
+            initialRouteName={isLoggedIn ? 'MainTabs' : 'Login'}
         >
             {!isLoggedIn ? (
                 <>
@@ -34,8 +34,8 @@ const StackNavigation = () => {
             ) : (
                 <>
                     <Stack.Screen
-                        name="DashboardScreen"
-                        component={DashboardScreen}
+                        name="MainTabs"
+                        component={MainTabNavigator}
                         options={{ headerShown: false }}
                     />
                     <Stack.Screen

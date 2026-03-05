@@ -6,7 +6,7 @@ import { store, RootState } from './src/store/store';
 import { restoreSession } from './src/store/authSlice';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from './src/constants/colors';
 import { navigationRef } from './src/utils/navigation';
@@ -17,6 +17,15 @@ function AppContent() {
   const dispatch = useDispatch();
   const { isLoggedIn } = useSelector((state: RootState) => state.auth);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const activeCallIds = useRef(new Set<string>());
+
+  const isCallScreenActive = (state: any, targetCallId: string): boolean => {
+    if (!state) return false;
+    const route = state.routes[state.index];
+    if (route.name === 'CallScreen' && route.params?.callId === targetCallId) return true;
+    if (route.state) return isCallScreenActive(route.state, targetCallId);
+    return false;
+  };
 
   useEffect(() => {
     const checkAuthState = async () => {
@@ -102,8 +111,6 @@ function AppContent() {
 
     console.log("Global Call Listener: Active for", user.uid);
 
-    const activeCallIds = new Set<string>();
-
     const unsubscribe = firestore()
       .collection('calls')
       .where('receiverId', '==', user.uid)
@@ -113,36 +120,54 @@ function AppContent() {
           const callData = change.doc.data();
           const callId = change.doc.id;
 
-          if (change.type === 'added' && callData.callerId !== user.uid) {
-            if (!activeCallIds.has(callId)) {
-              activeCallIds.add(callId);
-              console.log("Global Call Listener: New incoming call", callId);
+          // incoming call detection: 
+          // 1. Must be 'calling' status
+          // 2. I must not be the caller
+          // 3. Haven't notified for this callId in this session yet
+          const isNewIncoming = callData.status === 'calling' &&
+            callData.callerId !== user.uid &&
+            !activeCallIds.current.has(callId);
 
-              // Fetch caller name for the notification banner
-              let callerName = 'Unknown';
-              try {
-                const callerDoc = await firestore().collection('users').doc(callData.callerId).get();
-                callerName = callerDoc.data()?.name || 'Unknown';
-              } catch (e) { }
+          if (isNewIncoming) {
+            activeCallIds.current.add(callId);
+            console.log("Global Call Listener: New incoming call detected", callId);
 
-              // Show Full Screen Intent — this wakes up the screen in background!
-              await showIncomingCallNotification(callId, callerName);
+            // Fetch caller details for the notification banner and screen
+            let callerName = 'Unknown';
+            let callerAvatar = null;
+            try {
+              const callerDoc = await firestore().collection('users').doc(callData.callerId).get();
+              const callerData = callerDoc.data();
+              callerName = callerData?.name || 'Unknown';
+              callerAvatar = callerData?.profileImage || null;
+            } catch (e) { }
 
-              // Also navigate directly (works when app is already in foreground)
-              GlobalNavigation.navigate('CallScreen', {
-                callId,
-                isCaller: false,
-              });
+            // Show Full Screen Intent — this wakes up the screen in background!
+            await showIncomingCallNotification(callId, callerName);
+
+            // Also navigate directly (works when app is already in foreground)
+            if (GlobalNavigation.navigationRef.isReady()) {
+              const state = GlobalNavigation.navigationRef.getRootState();
+              if (!isCallScreenActive(state, callId)) {
+                GlobalNavigation.navigate('CallScreen', {
+                  callId,
+                  isCaller: false,
+                  userName: callerName,
+                  userAvatar: callerAvatar
+                });
+              }
             }
           }
 
           if (change.type === 'modified' && callData.status !== 'calling') {
-            activeCallIds.delete(callId);
-            cancelCallNotification();
+            if (activeCallIds.current.has(callId)) {
+              activeCallIds.current.delete(callId);
+              cancelCallNotification();
+            }
           }
 
           if (change.type === 'removed') {
-            activeCallIds.delete(callId);
+            activeCallIds.current.delete(callId);
             cancelCallNotification();
           }
         });

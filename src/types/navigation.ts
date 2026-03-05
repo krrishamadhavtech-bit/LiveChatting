@@ -8,5 +8,7 @@ export type RootStackParamList = {
   CallScreen: {
     callId: string;
     isCaller: boolean;
+    userName?: string;
+    userAvatar?: string | null;
   };
 };

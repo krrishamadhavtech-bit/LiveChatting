@@ -51,7 +51,6 @@ const DashboardScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       {/* Header */}
       <View style={styles.header}>

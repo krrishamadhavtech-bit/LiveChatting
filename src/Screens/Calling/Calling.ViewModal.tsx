@@ -30,6 +30,7 @@ const ViewModal = ({ route, navigation }: any) => {
     const [callStatus, setCallStatus] = useState<string>("calling");
     const [isMuted, setIsMuted] = useState(false);
     const [isSpeakerOn, setIsSpeakerOn] = useState(false);
+    const [otherUserData, setOtherUserData] = useState<any>(null);
 
     const timerRef = useRef<any>(null);
     const ringingStarted = useRef(false);
@@ -226,14 +227,31 @@ const ViewModal = ({ route, navigation }: any) => {
             if (data.chatRoomId) chatRoomIdRef.current = data.chatRoomId;
             if (data.chatMessageId) chatMessageIdRef.current = data.chatMessageId;
 
+            // Fetch other user data if not already fetched
+            if (!otherUserData) {
+                const otherUserId = isCaller ? data.receiverId : data.callerId;
+                if (otherUserId) {
+                    firestore().collection('users').doc(otherUserId).get().then(userDoc => {
+                        const userData = userDoc.data();
+                        if (userData) {
+                            setOtherUserData(userData);
+                        }
+                    });
+                }
+            }
+
             if (data.status === "ended") {
                 cleanup();
                 navigation.goBack();
                 return;
             }
 
-            if (data.status === "accepted") {
+            if (data.status === "accepted" && !isAcceptedRef.current) {
                 isAcceptedRef.current = true;
+                // Update Firestore to track that it was accepted (for history screen)
+                if (isCaller) {
+                    callDocRef.update({ isAccepted: true }).catch(() => { });
+                }
             }
 
             // --- Ringing Logic ---
@@ -309,7 +327,19 @@ const ViewModal = ({ route, navigation }: any) => {
             }
         });
 
+        // --- 60s Timeout (Caller side only) ---
+        let timeoutTimer: any = null;
+        if (isCaller) {
+            timeoutTimer = setTimeout(() => {
+                if (!isAcceptedRef.current) {
+                    console.log("Timeout: Call not answered in 60s. Auto-ending.");
+                    endCall();
+                }
+            }, 60000); // 60 seconds
+        }
+
         return () => {
+            if (timeoutTimer) clearTimeout(timeoutTimer);
             unsubscribe();
             cleanup();
         };
@@ -398,6 +428,7 @@ const ViewModal = ({ route, navigation }: any) => {
         endCall,
         toggleMute,
         toggleSpeaker,
+        otherUserData,
     };
 };
 

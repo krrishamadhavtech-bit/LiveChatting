@@ -1,11 +1,12 @@
 import { StyleSheet } from 'react-native';
 import { COLORS } from '../../constants/colors';
+import { fontFamily, getFontSize, hp, hpx } from '../../utils/responsive';
 
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'space-between',
-        paddingVertical: 60,
+        paddingVertical: hp(6),
         backgroundColor: COLORS.black,
     },
 
@@ -15,7 +16,8 @@ export const styles = StyleSheet.create({
 
     callingText: {
         color: COLORS.white,
-        fontSize: 18,
+        fontSize: getFontSize(16),
+        fontFamily: fontFamily.regular,
         letterSpacing: 1,
     },
 
@@ -26,25 +28,25 @@ export const styles = StyleSheet.create({
 
     pulseCircle: {
         position: 'absolute',
-        width: 220,
-        height: 220,
-        borderRadius: 110,
+        width: hpx(110),
+        height: hpx(110),
+        borderRadius: 1,
         backgroundColor: COLORS.black,
     },
 
     avatar: {
-        width: 160,
-        height: 160,
+        width: hpx(160),
+        height: hpx(160),
         borderRadius: 80,
         borderWidth: 4,
         borderColor: COLORS.highlightBackground,
     },
 
     userName: {
-        marginTop: 20,
-        fontSize: 26,
+        marginTop: hp(1.4),
+        fontSize: getFontSize(20),
         color: COLORS.white,
-        fontWeight: '600',
+        fontFamily: fontFamily.bold
     },
 
     controlsContainer: {
@@ -54,8 +56,8 @@ export const styles = StyleSheet.create({
     },
 
     iconButton: {
-        width: 60,
-        height: 60,
+        width: hp(8),
+        height: hp(8),
         borderRadius: 30,
         backgroundColor: COLORS.highlightBackground,
         justifyContent: 'center',
@@ -63,8 +65,8 @@ export const styles = StyleSheet.create({
     },
 
     endCallButton: {
-        width: 75,
-        height: 75,
+        width: hp(10),
+        height: hp(10),
         borderRadius: 40,
         backgroundColor: COLORS.error,
         justifyContent: 'center',
@@ -76,8 +78,8 @@ export const styles = StyleSheet.create({
     },
 
     acceptCallButton: {
-        width: 75,
-        height: 75,
+        width: hp(10),
+        height: hp(10),
         borderRadius: 40,
         backgroundColor: COLORS.online,
         justifyContent: 'center',

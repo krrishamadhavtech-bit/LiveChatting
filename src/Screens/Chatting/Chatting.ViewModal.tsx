@@ -508,6 +508,8 @@ const ViewModal = () => {
             navigation.navigate('CallScreen', {
                 callId,
                 isCaller: true,
+                userName,
+                userAvatar,
             });
 
         } catch (error) {
