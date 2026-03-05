@@ -76,7 +76,7 @@ const ViewModal = () => {
         .collection('chatRooms')
         .doc(chatRoomId)
         .onSnapshot(doc => {
-          if (doc.exists()) {
+          if (doc?.exists()) {
             const data = doc.data();
             const lastMsg = data?.lastMessage || {};
             const unread = (lastMsg.senderId === user.id && !lastMsg.read) ? 1 : 0;
@@ -108,9 +108,6 @@ const ViewModal = () => {
       // Store unsubscribe function
       chatListenersRef.current[user.id] = unsub;
     });
-
-    // Cleanup listeners for removed users (optional, but good practice)
-    // For simplicity in this session, we'll just cleanup on unmount
 
   }, [rawUsers, authUser]);
 

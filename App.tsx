@@ -9,6 +9,9 @@ import firestore from '@react-native-firebase/firestore';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from './src/constants/colors';
+import { navigationRef } from './src/utils/navigation';
+import * as GlobalNavigation from './src/utils/navigation';
+import { showIncomingCallNotification, cancelCallNotification, setupNotificationHandlers, requestNotificationPermission } from './src/utils/notificationService';
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -83,6 +86,76 @@ function AppContent() {
     };
   }, [isLoggedIn]);
 
+  // --- Global Incoming Call Listener ---
+  // Uses Notifee Full Screen Intent to wake up the screen even in background
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const user = auth().currentUser;
+    if (!user) return;
+
+    // Request notification permission (Android 13+ / iOS)
+    requestNotificationPermission();
+
+    // Setup action handlers (Answer / Decline buttons on notification)
+    setupNotificationHandlers(GlobalNavigation);
+
+    console.log("Global Call Listener: Active for", user.uid);
+
+    const activeCallIds = new Set<string>();
+
+    const unsubscribe = firestore()
+      .collection('calls')
+      .where('receiverId', '==', user.uid)
+      .where('status', '==', 'calling')
+      .onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(async change => {
+          const callData = change.doc.data();
+          const callId = change.doc.id;
+
+          if (change.type === 'added' && callData.callerId !== user.uid) {
+            if (!activeCallIds.has(callId)) {
+              activeCallIds.add(callId);
+              console.log("Global Call Listener: New incoming call", callId);
+
+              // Fetch caller name for the notification banner
+              let callerName = 'Unknown';
+              try {
+                const callerDoc = await firestore().collection('users').doc(callData.callerId).get();
+                callerName = callerDoc.data()?.name || 'Unknown';
+              } catch (e) { }
+
+              // Show Full Screen Intent — this wakes up the screen in background!
+              await showIncomingCallNotification(callId, callerName);
+
+              // Also navigate directly (works when app is already in foreground)
+              GlobalNavigation.navigate('CallScreen', {
+                callId,
+                isCaller: false,
+              });
+            }
+          }
+
+          if (change.type === 'modified' && callData.status !== 'calling') {
+            activeCallIds.delete(callId);
+            cancelCallNotification();
+          }
+
+          if (change.type === 'removed') {
+            activeCallIds.delete(callId);
+            cancelCallNotification();
+          }
+        });
+      }, (error) => {
+        console.error("Global Call Listener Error:", error);
+      });
+
+    return () => {
+      console.log("Global Call Listener: Stopped");
+      unsubscribe();
+    };
+  }, [isLoggedIn]);
+
   if (isCheckingAuth) {
     return (
       <View style={styles.loadingContainer}>
@@ -92,7 +165,7 @@ function AppContent() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <StackNavigation />
     </NavigationContainer>
   );

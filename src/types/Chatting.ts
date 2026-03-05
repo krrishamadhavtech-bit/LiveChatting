@@ -14,6 +14,7 @@ export type Message = {
   };
   forwarded?: boolean;
   forwardedFrom?: string | null;
+  type?: 'text' | 'call';
 };
 
 export type RouteParams = {

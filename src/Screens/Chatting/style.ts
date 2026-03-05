@@ -30,6 +30,8 @@ export const styles = StyleSheet.create({
     borderRadius: wpx(20),
     marginRight: wpx(12),
   },
+  CallIcon: {
+  },
   headerText: {
     flex: 1,
   },
@@ -264,5 +266,10 @@ export const styles = StyleSheet.create({
     width: wpx(60),
     justifyContent: 'center',
     alignItems: 'center'
+  },
+  callMessageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
   }
 });

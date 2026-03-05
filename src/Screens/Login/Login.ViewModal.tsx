@@ -24,7 +24,7 @@ const ViewModal = () => {
 
     setLoading(true);
     dispatch(setReduxLoading(true));
-    
+
     try {
       const userCredential = await auth().signInWithEmailAndPassword(
         email,
@@ -35,10 +35,13 @@ const ViewModal = () => {
       const userEmail = userCredential.user.email || '';
 
       // 🔥 Update online status
-      await firestore().collection('users').doc(uid).update({
-        isOnline: true,
-        lastSeen: firestore.FieldValue.serverTimestamp(),
-      });
+      await firestore().collection('users').doc(uid).set(
+        {
+          isOnline: true,
+          lastSeen: firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
 
       // 💾 Save user data to AsyncStorage for persistence
       const userData = {
@@ -54,6 +57,7 @@ const ViewModal = () => {
 
       navigation.navigate('DashboardScreen' as never);
     } catch (error: any) {
+      console.log("login error", error)
       Alert.alert('Login Error', error.message);
       dispatch(setError(error.message));
     } finally {

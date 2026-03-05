@@ -8,6 +8,7 @@ import DashboardScreen from '../Screens/Dashboard/Dashboard';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { COLORS } from '../constants/colors';
+import CallScreen from '../Screens/Calling/CallingScreen';
 
 const StackNavigation = () => {
     const Stack = createStackNavigator();
@@ -49,6 +50,11 @@ const StackNavigation = () => {
                             },
                             headerTintColor: COLORS.black,
                         })}
+                    />
+                    <Stack.Screen
+                        name="CallScreen"
+                        component={CallScreen}
+                        options={{ headerShown: false }}
                     />
                 </>
             )}

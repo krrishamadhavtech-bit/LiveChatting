@@ -19,6 +19,7 @@ import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler'
 import CustomModal from '../../components/CustomModal';
 import UserSelectionModal from '../../components/UserSelectionModal';
 import MessageOptionsModal from '../../components/MessageOptionsModal';
+import { wpx } from '../../utils/responsive';
 
 const ChatScreen = () => {
     const {
@@ -50,7 +51,8 @@ const ChatScreen = () => {
         selectedMessage,
         handleReplyOption,
         handleForwardOption,
-        handleDeleteOption
+        handleDeleteOption,
+        handleCall
     } = ViewModal();
 
     const isTypingRef = useRef(false);
@@ -122,6 +124,10 @@ const ChatScreen = () => {
                             {typing ? 'typing...' : isOnline ? 'Online' : 'Offline'}
                         </Text>
                     </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={handleCall}>
+                    <Icon name="call" size={25} color={COLORS.primary} />
                 </TouchableOpacity>
             </View>
 

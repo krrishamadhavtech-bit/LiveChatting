@@ -13,6 +13,7 @@ import {
     Alert,
 } from 'react-native';
 
+
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
@@ -23,10 +24,15 @@ import firestore from '@react-native-firebase/firestore';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Message, RouteParams } from '../../types/Chatting';
 import { COLORS } from '../../constants/colors';
-
+import { RootStackParamList } from '../../types/navigation';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+type NavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'ChattingScreen'
+>;
 const ViewModal = () => {
     const route = useRoute();
-    const navigation = useNavigation();
+    const navigation = useNavigation<NavigationProp>();
     const flatListRef = useRef<any>(null);
     const params = route.params as RouteParams || {};
     const userId = params.userId || '';
@@ -162,6 +168,7 @@ const ViewModal = () => {
                             replyTo: data.replyTo || null,
                             forwarded: data.forwarded || false,
                             forwardedFrom: data.forwardedFrom || null,
+                            type: data.type || 'text',
                         });
                     });
 
@@ -290,8 +297,6 @@ const ViewModal = () => {
         }, [userId])
     );
 
-
-    // MARK: Send message - FIXED
     const handleSend = async () => {
         if (!newMessage.trim() || !currentUserId || !userId) {
             console.log('Cannot send: empty message or no users');
@@ -459,6 +464,57 @@ const ViewModal = () => {
         }
     };
 
+    const handleCall = async () => {
+        try {
+            if (!currentUserId || !userId) return;
+
+            const callRef = firestore().collection('calls').doc();
+            const callId = callRef.id;
+
+            // Add a "Voice call" message to the chat
+            const chatRoomId = getChatRoomId();
+            const messageRef = await firestore()
+                .collection('chatRooms')
+                .doc(chatRoomId)
+                .collection('messages')
+                .add({
+                    text: '📞 Voice call',
+                    senderId: currentUserId,
+                    timestamp: firestore.FieldValue.serverTimestamp(),
+                    read: false,
+                    type: 'call'
+                });
+
+            await callRef.set({
+                callerId: currentUserId,
+                receiverId: userId,
+                offer: null,
+                status: 'calling',
+                createdAt: firestore.FieldValue.serverTimestamp(),
+                chatRoomId,
+                chatMessageId: messageRef.id,
+            });
+
+            // Update chatRoom last message
+            await firestore().collection('chatRooms').doc(chatRoomId).update({
+                lastMessage: {
+                    text: '📞 Voice call',
+                    senderId: currentUserId,
+                    timestamp: firestore.FieldValue.serverTimestamp(),
+                    read: false,
+                }
+            });
+
+            navigation.navigate('CallScreen', {
+                callId,
+                isCaller: true,
+            });
+
+        } catch (error) {
+            console.error('Error starting call:', error);
+            Alert.alert('Error', 'Could not start call');
+        }
+    };
     const formatTime = (timestamp: any) => {
         if (!timestamp) return '--:--';
         try {
@@ -512,9 +568,19 @@ const ViewModal = () => {
                         </View>
                     </TouchableOpacity>
                 )}
-                <Text style={[styles.messageText, item.isMe ? styles.myMessageText : styles.otherMessageText]}>
-                    {item.text}
-                </Text>
+
+                {item.type === 'call' ? (
+                    <View style={styles.callMessageContainer}>
+                        <Icon name="call" size={20} color={item.isMe ? COLORS.white : COLORS.black} />
+                        <Text style={[styles.messageText, item.isMe ? styles.myMessageText : styles.otherMessageText, { marginLeft: 8 }]}>
+                            {item.text.replace('📞 ', '')}
+                        </Text>
+                    </View>
+                ) : (
+                    <Text style={[styles.messageText, item.isMe ? styles.myMessageText : styles.otherMessageText]}>
+                        {item.text}
+                    </Text>
+                )}
                 <View style={styles.messageFooter}>
                     <Text style={[styles.timestamp, item.isMe ? styles.myTimestamp : styles.otherTimestamp]}>
                         {formatTime(item.timestamp)}
@@ -572,7 +638,8 @@ const ViewModal = () => {
         selectedMessage,
         handleReplyOption,
         handleForwardOption,
-        handleDeleteOption
+        handleDeleteOption,
+        handleCall
     }
 }
 
