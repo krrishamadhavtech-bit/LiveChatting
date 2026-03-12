@@ -14,7 +14,9 @@ export type Message = {
   };
   forwarded?: boolean;
   forwardedFrom?: string | null;
-  type?: 'text' | 'call';
+  type?: 'text' | 'call' | 'audio';
+  audioUrl?: string;
+  audioDuration?: number;
 };
 
 export type RouteParams = {

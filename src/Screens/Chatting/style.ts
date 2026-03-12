@@ -279,4 +279,118 @@ export const styles = StyleSheet.create({
   },
   callMessageText: { marginLeft: 8 },
   statusCheckmark: { marginLeft: 4 },
+
+  // ── Mic / Send button ────────────────────────────────────────────────────
+  micButton: {
+    width: wpx(40),
+    height: wpx(40),
+    borderRadius: wpx(20),
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: wpx(10),
+  },
+
+  // ── Recording bar ────────────────────────────────────────────────────────
+  recordingBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    paddingHorizontal: wpx(15),
+    paddingVertical: hpx(10),
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  cancelRecordBtn: {
+    padding: wpx(8),
+  },
+  micPulse: {
+    width: wpx(32),
+    height: wpx(32),
+    borderRadius: wpx(16),
+    backgroundColor: '#FF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: wpx(8),
+  },
+  recordingTimer: {
+    fontSize: getFontSize(15),
+    fontFamily: fontFamily.semi_bold,
+    color: COLORS.text,
+    minWidth: wpx(40),
+  },
+  recordingHint: {
+    flex: 1,
+    fontSize: getFontSize(12),
+    color: COLORS.textTertiary,
+    marginLeft: wpx(8),
+  },
+  sendRecordBtn: {
+    padding: wpx(4),
+  },
+
+  // ── Uploading bar ─────────────────────────────────────────────────────────
+  uploadingBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.inputBackground,
+    paddingHorizontal: wpx(15),
+    paddingVertical: hpx(8),
+    gap: wpx(8),
+  },
+  uploadingText: {
+    fontSize: getFontSize(13),
+    color: COLORS.primary,
+  },
+
+  // ── Audio message bubble ──────────────────────────────────────────────────
+  audioRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minWidth: wpx(180),
+    paddingVertical: hpx(4),
+  },
+  audioPlayBtn: {
+    width: wpx(36),
+    height: wpx(36),
+    borderRadius: wpx(18),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: wpx(8),
+  },
+  audioPlayBtnMe: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  audioPlayBtnOther: {
+    backgroundColor: COLORS.primary,
+  },
+  audioWaveform: {
+    flex: 1,
+  },
+  audioProgressTrack: {
+    height: hpx(4),
+    borderRadius: hpx(2),
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    overflow: 'hidden',
+    marginBottom: hpx(4),
+  },
+  audioProgressFill: {
+    height: '100%',
+    borderRadius: hpx(2),
+  },
+  audioProgressFillMe: {
+    backgroundColor: COLORS.white,
+  },
+  audioProgressFillOther: {
+    backgroundColor: COLORS.primary,
+  },
+  audioDuration: {
+    fontSize: getFontSize(11),
+  },
+  audioDurationMe: {
+    color: COLORS.overlay,
+  },
+  audioDurationOther: {
+    color: COLORS.textTertiary,
+  },
 });

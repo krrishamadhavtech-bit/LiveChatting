@@ -12,6 +12,9 @@ import {
     UIManager,
     Alert,
 } from 'react-native';
+import storage from '@react-native-firebase/storage';
+import RNFS from 'react-native-fs';
+import useAudioRecorder from '../../utils/useAudioRecorder';
 
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -58,6 +61,18 @@ const ViewModal = () => {
     // Message Options Modal
     const [optionsModalVisible, setOptionsModalVisible] = useState(false);
     const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+
+    // Audio
+    const {
+        isRecording,
+        recordingDuration,
+        playingState,
+        startRecording,
+        stopRecording,
+        playAudio,
+        stopPlayback,
+    } = useAudioRecorder();
+    const [isUploadingAudio, setIsUploadingAudio] = useState(false);
 
     useEffect(() => {
         if (forwardModalVisible && currentUserId) {
@@ -169,6 +184,8 @@ const ViewModal = () => {
                             forwarded: data.forwarded || false,
                             forwardedFrom: data.forwardedFrom || null,
                             type: data.type || 'text',
+                            audioUrl: data.audioUrl || null,
+                            audioDuration: data.audioDuration || 0,
                         });
                     });
 
@@ -357,6 +374,92 @@ const ViewModal = () => {
         } catch (error) {
             console.error('Error sending message:', error);
         }
+    };
+
+    // ─── Audio Send ────────────────────────────────────────────────────────────
+    const handleStartRecording = async () => {
+        await startRecording();
+    };
+
+    const handleStopAndSendAudio = async () => {
+        if (!isRecording) return;
+        const result = await stopRecording();
+        if (!result) return;
+
+        // Discard recordings under 1 second
+        if (result.duration < 1) {
+            console.log('Recording too short, discarding.');
+            return;
+        }
+
+        if (!currentUserId || !userId) return;
+
+        try {
+            setIsUploadingAudio(true);
+
+            // ── READ FILE AS BASE64 ──
+            console.log('📄 Reading local file for Base64 conversion:', result.path);
+            const base64Data = await RNFS.readFile(result.path, 'base64');
+
+            // Format as Data URI
+            const extension = Platform.OS === 'ios' ? 'm4a' : 'mp4';
+            const audioDataUri = `data:audio/${extension};base64,${base64Data}`;
+
+            console.log('✅ Base64 conversion successful. String length:', base64Data.length);
+
+            // Check size (Firestore limit is 1MB, Base64 adds ~33% overhead, so roughly 750KB limit)
+            if (audioDataUri.length > 1000000) {
+                Alert.alert('Message too long', 'Voice message is too large to send. Please record a shorter clip.');
+                return;
+            }
+
+            const chatRoomId = getChatRoomId();
+            const timestamp = firestore.FieldValue.serverTimestamp();
+            const messageId = `${Date.now()}_${currentUserId}`;
+
+            const messageData = {
+                id: messageId,
+                text: '🎤 Voice message',
+                senderId: currentUserId,
+                senderName: myProfile?.name || 'Unknown',
+                timestamp,
+                read: false,
+                type: 'audio',
+                audioUrl: audioDataUri, // Now contains base64 data uri
+                audioDuration: result.duration,
+                replyTo: null,
+                forwarded: false,
+                forwardedFrom: null,
+            };
+
+            const chatRoomRef = firestore().collection('chatRooms').doc(chatRoomId);
+            await chatRoomRef.set({
+                participants: [currentUserId, userId].sort(),
+                lastMessage: {
+                    text: '🎤 Voice message',
+                    senderId: currentUserId,
+                    timestamp,
+                    read: false,
+                },
+                lastUpdated: timestamp,
+            }, { merge: true });
+
+            await chatRoomRef.collection('messages').doc(messageId).set(messageData);
+            console.log('Audio message (Base64) sent successfully to Firestore');
+
+            // Clean up the local record file
+            try { await RNFS.unlink(result.path); } catch (_) { }
+
+        } catch (err) {
+            console.error('Error sending audio message:', err);
+            Alert.alert('Error', 'Failed to send voice message.');
+        } finally {
+            setIsUploadingAudio(false);
+        }
+    };
+
+    const handleCancelRecording = async () => {
+        await stopRecording();
     };
 
     const handleDeleteMessage = (messageId: string) => {
@@ -641,7 +744,17 @@ const ViewModal = () => {
         handleReplyOption,
         handleForwardOption,
         handleDeleteOption,
-        handleCall
+        handleCall,
+        // Audio
+        isRecording,
+        recordingDuration,
+        isUploadingAudio,
+        playingState,
+        handleStartRecording,
+        handleStopAndSendAudio,
+        handleCancelRecording,
+        playAudio,
+        stopPlayback,
     }
 }
 

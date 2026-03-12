@@ -10,6 +10,8 @@ import {
     KeyboardAvoidingView,
     Platform,
     SafeAreaView,
+    Animated,
+    Easing,
 } from 'react-native';
 import { styles } from './style';
 import ViewModal from './Chatting.ViewModal';
@@ -19,7 +21,66 @@ import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler'
 import CustomModal from '../../components/CustomModal';
 import UserSelectionModal from '../../components/UserSelectionModal';
 import MessageOptionsModal from '../../components/MessageOptionsModal';
-import { wpx } from '../../utils/responsive';
+import { wpx, hpx, getFontSize } from '../../utils/responsive';
+
+const formatDuration = (seconds: number): string => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+};
+
+const AudioMessageBubble = ({
+    item,
+    playingState,
+    playAudio,
+}: {
+    item: any;
+    playingState: any;
+    playAudio: (url: string, id: string) => void;
+}) => {
+    const isThisPlaying = playingState.messageId === item.id && playingState.isPlaying;
+    const progressFraction =
+        playingState.messageId === item.id && playingState.durationMs > 0
+            ? playingState.currentMs / playingState.durationMs
+            : 0;
+
+    const displayDuration =
+        playingState.messageId === item.id && playingState.durationMs > 0
+            ? Math.round(playingState.durationMs / 1000)
+            : item.audioDuration || 0;
+
+    return (
+        <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.audioRow}
+            onPress={() => item.audioUrl && playAudio(item.audioUrl, item.id)}
+        >
+            <View style={[styles.audioPlayBtn, item.isMe ? styles.audioPlayBtnMe : styles.audioPlayBtnOther]}>
+                <Icon
+                    name={isThisPlaying ? 'pause' : 'play'}
+                    size={18}
+                    color={COLORS.white}
+                />
+            </View>
+
+            <View style={styles.audioWaveform}>
+                {/* Simple progress bar */}
+                <View style={styles.audioProgressTrack}>
+                    <View
+                        style={[
+                            styles.audioProgressFill,
+                            item.isMe ? styles.audioProgressFillMe : styles.audioProgressFillOther,
+                            { width: `${progressFraction * 100}%` },
+                        ]}
+                    />
+                </View>
+                <Text style={[styles.audioDuration, item.isMe ? styles.audioDurationMe : styles.audioDurationOther]}>
+                    {formatDuration(displayDuration)}
+                </Text>
+            </View>
+        </TouchableOpacity>
+    );
+};
 
 const ChatScreen = () => {
     const {
@@ -52,11 +113,36 @@ const ChatScreen = () => {
         handleReplyOption,
         handleForwardOption,
         handleDeleteOption,
-        handleCall
+        handleCall,
+        // Audio
+        isRecording,
+        recordingDuration,
+        isUploadingAudio,
+        playingState,
+        handleStartRecording,
+        handleStopAndSendAudio,
+        handleCancelRecording,
+        playAudio,
     } = ViewModal();
 
     const isTypingRef = useRef(false);
     const typingTimeoutRef = useRef<any>(null);
+    const pulseAnim = useRef(new Animated.Value(1)).current;
+
+    // Mic pulse animation while recording
+    useEffect(() => {
+        if (isRecording) {
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(pulseAnim, { toValue: 1.3, duration: 500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+                    Animated.timing(pulseAnim, { toValue: 1, duration: 500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+                ])
+            ).start();
+        } else {
+            pulseAnim.stopAnimation();
+            pulseAnim.setValue(1);
+        }
+    }, [isRecording]);
 
     const handleTextChange = (text: string) => {
         setNewMessage(text);
@@ -87,6 +173,33 @@ const ChatScreen = () => {
             );
         };
 
+        // ── Audio message bubble ────────────────────────────────────────────────
+        if (item.type === 'audio') {
+            return (
+                <View style={[styles.messageContainer, item.isMe ? styles.myMessage : styles.otherMessage]}>
+                    <View style={[styles.messageBubble, item.isMe ? styles.myBubble : styles.otherBubble]}>
+                        <AudioMessageBubble item={item} playingState={playingState} playAudio={playAudio} />
+                        <View style={styles.messageFooter}>
+                            <Text style={[styles.timestamp, item.isMe ? styles.myTimestamp : styles.otherTimestamp]}>
+                                {item.timestamp?.toDate
+                                    ? item.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                    : '--:--'}
+                            </Text>
+                            {item.isMe && (
+                                <Icon
+                                    name={item.read ? 'checkmark-done' : 'checkmark'}
+                                    size={16}
+                                    color={!item.read ? COLORS.overlay : COLORS.online}
+                                    style={styles.statusCheckmark}
+                                />
+                            )}
+                        </View>
+                    </View>
+                </View>
+            );
+        }
+
+        // ── Normal (text / call) message ────────────────────────────────────────
         return (
             <Swipeable
                 ref={(ref) => { swipeableRef = ref; }}
@@ -100,6 +213,9 @@ const ChatScreen = () => {
             </Swipeable>
         );
     };
+
+    // ── Recording duration label (mm:ss) ───────────────────────────────────────
+    const recordingLabel = formatDuration(Math.floor(recordingDuration / 1000));
 
     return (
         <SafeAreaView style={styles.container}>
@@ -186,27 +302,70 @@ const ChatScreen = () => {
                         </TouchableOpacity>
                     </View>
                 )}
-                <View style={styles.inputContainer}>
-                    <View style={styles.inputWrapper}>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Type a message..."
-                            placeholderTextColor={COLORS.textTertiary}
-                            value={newMessage}
-                            onChangeText={handleTextChange}
-                            multiline
-                            maxLength={500}
-                        />
-                    </View>
 
-                    <TouchableOpacity
-                        style={[styles.sendButton, !newMessage.trim() && styles.sendButtonDisabled]}
-                        onPress={handleSend}
-                        disabled={!newMessage.trim()}
-                    >
-                        <Icon name="send" size={24} color={COLORS.white} />
-                    </TouchableOpacity>
-                </View>
+                {/* ── Recording bar (shown while recording) ── */}
+                {isRecording && (
+                    <View style={styles.recordingBar}>
+                        <TouchableOpacity onPress={handleCancelRecording} style={styles.cancelRecordBtn}>
+                            <Icon name="trash-outline" size={22} color={COLORS.error || '#FF4444'} />
+                        </TouchableOpacity>
+                        <Animated.View style={[styles.micPulse, { transform: [{ scale: pulseAnim }] }]}>
+                            <Icon name="mic" size={18} color={COLORS.white} />
+                        </Animated.View>
+                        <Text style={styles.recordingTimer}>{recordingLabel}</Text>
+                        <Text style={styles.recordingHint}>Release ✓ to send</Text>
+                        <TouchableOpacity onPress={handleStopAndSendAudio} style={styles.sendRecordBtn}>
+                            <Icon name="checkmark-circle" size={36} color={COLORS.primary} />
+                        </TouchableOpacity>
+                    </View>
+                )}
+
+                {/* ── Uploading indicator ── */}
+                {isUploadingAudio && !isRecording && (
+                    <View style={styles.uploadingBar}>
+                        <Icon name="cloud-upload-outline" size={18} color={COLORS.primary} />
+                        <Text style={styles.uploadingText}>Sending voice message…</Text>
+                    </View>
+                )}
+
+                {/* ── Normal input row (hide when recording) ── */}
+                {!isRecording && (
+                    <View style={styles.inputContainer}>
+                        <View style={styles.inputWrapper}>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Type a message..."
+                                placeholderTextColor={COLORS.textTertiary}
+                                value={newMessage}
+                                onChangeText={handleTextChange}
+                                multiline
+                                maxLength={500}
+                            />
+                        </View>
+
+                        {/* Show SEND button if there's text, else show MIC button */}
+                        {newMessage.trim() ? (
+                            <TouchableOpacity
+                                style={styles.sendButton}
+                                onPress={handleSend}
+                            >
+                                <Icon name="send" size={24} color={COLORS.white} />
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity
+                                style={styles.micButton}
+                                onPress={handleStartRecording}
+                                disabled={isUploadingAudio}
+                            >
+                                <Icon
+                                    name="mic"
+                                    size={24}
+                                    color={isUploadingAudio ? COLORS.disabled : COLORS.white}
+                                />
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                )}
             </KeyboardAvoidingView>
 
             <CustomModal
